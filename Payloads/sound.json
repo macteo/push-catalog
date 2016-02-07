@@ -1,0 +1,10 @@
+{
+  "aps": {
+    "content-available": 1
+  },
+  "payload": {
+    "category": "text",
+    "alert": "Did you heard the sound?",
+    "sound": "default"
+  }
+}

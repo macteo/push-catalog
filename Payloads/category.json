@@ -1,0 +1,8 @@
+{
+  "aps": {
+    "badge": 0,
+    "sound": "default",
+    "alert": "Alert with default answers",
+    "category": "yesOrNo"
+  }
+}

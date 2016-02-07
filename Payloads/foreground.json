@@ -1,0 +1,18 @@
+{
+  "aps": {
+    "content-available": 1
+  },
+  "payload": {
+    "category": "text",
+    "alert": "Where are you from?",
+    "actions": [
+      {
+        "behavior": "textInput",
+        "title": "Answer",
+        "url": "https://example.com",
+        "mode": "foreground"
+      }
+    ]
+  },
+  "clear": true
+}

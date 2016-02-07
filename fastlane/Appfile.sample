@@ -1,0 +1,3 @@
+app_identifier "" # The bundle identifier
+apple_id "" # Your Apple email address
+team_id ""  # Developer Portal Team ID

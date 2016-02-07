@@ -1,0 +1,7 @@
+{
+  "aps": {
+    "badge": 1,
+    "sound": "default",
+    "alert": "alert"
+  }
+}

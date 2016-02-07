@@ -1,0 +1,34 @@
+{
+  "aps": {
+    "content-available": 1
+  },
+  "payload": {
+    "category": "upDown",
+    "alert": {
+      "title": "Question:",
+      "body": "Do you like emoji? ☺️"
+    },
+    "actions": [
+      {
+        "title": "👍",
+        "secure": true,
+        "url": "https://example.com"
+      },
+      {
+        "title": "👎",
+        "destructive": true,
+        "url": "https://example.com"
+      },
+      {
+        "title": "Yes",
+        "url": "https://example.com"
+      },
+      {
+        "title": "No",
+        "destructive": true,
+        "url": "https://example.com"
+      }
+    ]
+  },
+  "clear": true
+}

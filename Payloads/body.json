@@ -1,0 +1,10 @@
+{
+  "aps": {
+    "badge": 0,
+    "sound": "default",
+    "alert": {
+      "title": "Title:",
+      "body": "Notification body"
+    }
+  }
+}

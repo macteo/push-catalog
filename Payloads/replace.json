@@ -1,0 +1,12 @@
+{
+  "aps": {
+    "badge": 0,
+    "sound": "default",
+    "alert": {
+      "title": "Title: nothing",
+      "subtitle": "An awesome subtitle",
+      "body": "Notification body"
+    },
+    "mutable-content": 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "aps": {
+        "badge": 0,
+        "sound": "default",
+        "alert": {
+            "title": "Title:",
+            "subtitle": "An awesome subtitle",
+            "body": "Notification body"
+        },
+        "my-attachment": "https://example.com/photo.jpg"
+    }
+}

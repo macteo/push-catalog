@@ -4,6 +4,7 @@
     "sound": "default",
     "alert": {
       "title": "Title:",
+      "subtitle": "An awesome subtitle",
       "body": "Notification body"
     }
   }

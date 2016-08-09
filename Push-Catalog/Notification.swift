@@ -31,30 +31,30 @@ let kCategoryKey                    = "category"
 let kContentAvailableKey            = "content-available"
 
 class Notification: NSObject, NSCoding {
-    let payload: [NSObject: AnyObject]
-    let date: NSDate
+    let payload: [String: AnyObject]
+    let date: Date
     
-    init(payload: [NSObject: AnyObject], date: NSDate) {
+    init(payload: [String: AnyObject], date: Date) {
         self.payload = payload
         self.date = date
         super.init()
     }
 
     convenience required init?(coder decoder: NSCoder) {
-        let payloadData = decoder.decodeObjectForKey("payload") as! NSData
-        let payload = NSKeyedUnarchiver.unarchiveObjectWithData(payloadData) as! [String: AnyObject]
-        let date = decoder.decodeObjectForKey("date") as! NSDate
+        let payloadData = decoder.decodeObject(forKey: "payload") as! Data
+        let payload = NSKeyedUnarchiver.unarchiveObject(with: payloadData) as! [String: AnyObject]
+        let date = decoder.decodeObject(forKey: "date") as! Date
         self.init(payload: payload, date: date)
     }
     
-    func encodeWithCoder(coder: NSCoder) {
-        let payloadData = NSKeyedArchiver.archivedDataWithRootObject(self.payload)
-        coder.encodeObject(payloadData, forKey: "payload")
-        coder.encodeObject(self.date, forKey: "date")
+    func encode(with coder: NSCoder) {
+        let payloadData = NSKeyedArchiver.archivedData(withRootObject: self.payload)
+        coder.encode(payloadData, forKey: "payload")
+        coder.encode(self.date, forKey: "date")
     }
     
-    var data : NSData {
-        return NSKeyedArchiver.archivedDataWithRootObject(self)
+    var data : Data {
+        return NSKeyedArchiver.archivedData(withRootObject: self)
     }
     
     override var description : String {
@@ -70,8 +70,8 @@ class Notification: NSObject, NSCoding {
         guard let aps = payload[kApsKey] as? [String: AnyObject] else { return }
         
         var (title, message) = ("", "")
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "Open", style: .Default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Open", style: .default, handler: nil))
         if let _ = aps[kContentAvailableKey] as? Int,
             let payload = payload[kPayloadKey] as? [String: AnyObject] {
                 (title, message) = titleAndMessageFromPayload()
@@ -84,10 +84,10 @@ class Notification: NSObject, NSCoding {
         } else {
             (title, message) = titleAndMessageFromAps()
         }
-        alertController.addAction(UIAlertAction(title: "Close", style: .Cancel, handler: nil))
+        alertController.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil))
         alertController.title = title
         alertController.message = message
-        UIApplication.sharedApplication().keyWindow?.rootViewController?.presentViewController(alertController, animated: true, completion: nil)
+        UIApplication.shared().keyWindow?.rootViewController?.present(alertController, animated: true, completion: nil)
     }
     
     func titleAndMessageFromAps() -> (title: String, message: String) {
@@ -102,15 +102,15 @@ class Notification: NSObject, NSCoding {
      Extracting alert title and (eventually) body from the notification
      dictionary to replicate the iOS behavior.
      */
-    func titleAndMessage(alert: AnyObject?) -> (title: String, message: String) {
+    func titleAndMessage(_ alert: AnyObject?) -> (title: String, message: String) {
         var title = ""
         var message = ""
         
-        func titleFrom(string: String) -> String {
+        func titleFrom(_ string: String) -> String {
             // Title is shown only on the Apple Watch
             var title = string
             // So we use the application name to replicate the behavior
-            if let appName = NSBundle.mainBundle().objectForInfoDictionaryKey("CFBundleDisplayName") as? String {
+            if let appName = Bundle.main().objectForInfoDictionaryKey("CFBundleDisplayName") as? String {
                 title = appName
             } else {
                 title = "Catalog"
@@ -136,17 +136,17 @@ class Notification: NSObject, NSCoding {
      objects.
      */
     func reportNotificationReceived() {
-        let internalNotification = NSNotification(name: kPushNotificationReceivedKey, object: nil, userInfo: self.payload)
-        NSNotificationCenter.defaultCenter().postNotification(internalNotification)
+        let internalNotification = Foundation.Notification(name: NSNotification.Name(rawValue: kPushNotificationReceivedKey), object: nil, userInfo: self.payload)
+        NotificationCenter.default().post(internalNotification)
         
-        NotificationsManager.sharedInstance.receivedNewNotification(self)
+        NotificationsManager.shared.receivedNewNotification(self)
     }
     
     func performAction() {
-        performAction(delay: 0)
+        performAction(0)
     }
     
-    func performAction(delay delay: Int) {
+    func performAction(_ delay: Int) {
         // Content available notifications
         if let aps = payload[kApsKey] as? [String: AnyObject],
             let _ = aps[kContentAvailableKey] as? Int {
@@ -154,8 +154,8 @@ class Notification: NSObject, NSCoding {
             // Remove every pending local notification
             if let clear = payload[kClearKey] as? Bool {
                 if clear == true {
-                    UIApplication.sharedApplication().cancelAllLocalNotifications()
-                    UIApplication.sharedApplication().applicationIconBadgeNumber = 0
+                    UIApplication.shared().cancelAllLocalNotifications()
+                    UIApplication.shared().applicationIconBadgeNumber = 0
                 }
             }
             
@@ -173,10 +173,10 @@ class Notification: NSObject, NSCoding {
                             actions.append(action)
                         }
                     }
-                    category.setActions(actions, forContext: UIUserNotificationActionContext.Default)
+                    category.setActions(actions, for: UIUserNotificationActionContext.default)
                 }
                 
-                if let appDelegate = UIApplication.sharedApplication().delegate as? AppDelegate {
+                if let appDelegate = UIApplication.shared().delegate as? AppDelegate {
                     appDelegate.registerCategory(category)
                 }
                 
@@ -203,15 +203,15 @@ class Notification: NSObject, NSCoding {
                     localNotification.applicationIconBadgeNumber = badgeNumber
                 }
                 
-                let fireDate = NSCalendar.currentCalendar().dateByAddingUnit(
-                    .Second,
+                let fireDate = Calendar.current().date(
+                    byAdding: .second,
                     value: delay,
-                    toDate: NSDate(),
-                    options: NSCalendarOptions(rawValue: 0))
+                    to: Date(),
+                    options: Calendar.Options(rawValue: 0))
 
                 localNotification.fireDate = fireDate
                 
-                UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
+                UIApplication.shared().scheduleLocalNotification(localNotification)
             }
         }
     }

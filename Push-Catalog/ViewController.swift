@@ -13,9 +13,9 @@ let emptyText = "Waiting for push notifications..."
 class ViewController: UIViewController {
     @IBOutlet var textView: UITextView!
 
-    @IBAction func settingsButtonPressed(sender: AnyObject) {
-        if let settingsUrl = NSURL(string: UIApplicationOpenSettingsURLString) {
-            UIApplication.sharedApplication().openURL(settingsUrl)
+    @IBAction func settingsButtonPressed(_ sender: AnyObject) {
+        if let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) {
+            UIApplication.shared().openURL(settingsUrl)
         } else {
             print("Failed to generate Settings app url.")
         }
@@ -26,17 +26,17 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "pushReceived:", name: kPushNotificationReceivedKey, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "pushToken:", name: kPushNotificationTokenKey, object: nil)
+        NotificationCenter.default().addObserver(self, selector: #selector(ViewController.pushReceived(_:)), name: kPushNotificationReceivedKey, object: nil)
+        NotificationCenter.default().addObserver(self, selector: #selector(ViewController.pushToken(_:)), name: kPushNotificationTokenKey, object: nil)
         printPayload()
     }
 
-    func pushReceived(notification: NSNotification) {
-        payload = notification.userInfo
+    func pushReceived(_ notification: Foundation.Notification) {
+        payload = (notification as NSNotification).userInfo
         printPayload()
     }
 
-    func pushToken(notification: NSNotification) {
+    func pushToken(_ notification: Foundation.Notification) {
         if let newToken = notification.object as? String {
             token = newToken
         }
@@ -45,53 +45,56 @@ class ViewController: UIViewController {
     func printPayload() {
         if let payload = payload {
             do {
-                let data = try NSJSONSerialization.dataWithJSONObject(payload, options: NSJSONWritingOptions.PrettyPrinted)
-                if let string = NSString(data: data, encoding: NSUTF8StringEncoding) {
-                    let replacedString = string.stringByReplacingOccurrencesOfString("\\/", withString: "/")
-                    textView.textAlignment = .Left
+                let data = try JSONSerialization.data(withJSONObject: payload, options: JSONSerialization.WritingOptions.prettyPrinted)
+                if let string = NSString(data: data, encoding: String.Encoding.utf8.rawValue) {
+                    let replacedString = string.replacingOccurrences(of: "\\/", with: "/")
+                    textView.textAlignment = .left
                     textView.text = replacedString
                 }
             } catch _ as NSError {
-                textView.textAlignment = .Center
+                textView.textAlignment = .center
                 textView.text = NSLocalizedString("Error: cannot parse the notification Payload.", comment: "")
             }
         } else {
             textView.text = emptyText
-            textView.textAlignment = .Center
+            textView.textAlignment = .center
         }
     }
 
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default().removeObserver(self)
     }
 
-    @IBAction func infoButtonPressed(sender: UIBarButtonItem) {
-        let shortVersion = NSBundle.mainBundle().objectForInfoDictionaryKey("CFBundleShortVersionString") as! String
-        let version = NSBundle.mainBundle().objectForInfoDictionaryKey("CFBundleVersion") as! String
+    @IBAction func infoButtonPressed(_ sender: UIBarButtonItem) {
+        let shortVersion = Bundle.main().objectForInfoDictionaryKey("CFBundleShortVersionString") as! String
+        let version = Bundle.main().objectForInfoDictionaryKey("CFBundleVersion") as! String
 
         let appVersion = "\(shortVersion) (\(version))"
         if let token = token {
-            let alertController = UIAlertController(title: NSLocalizedString("Push Catalog", comment: ""), message: String(format: "Version: %@\n\n%@", arguments: [appVersion, token]), preferredStyle: .ActionSheet)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Cancel, handler: { (action) -> Void in
-                alertController.dismissViewControllerAnimated(true, completion: nil)
+            let alertController = UIAlertController(title: NSLocalizedString("Push Catalog", comment: ""), message: String(format: "Version: %@\n\n%@", arguments: [appVersion, token]), preferredStyle: .actionSheet)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) -> Void in
+                alertController.dismiss(animated: true, completion: nil)
             }))
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("Share APN Token", comment: ""), style: .Default, handler: { (action) -> Void in
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("Share APN Token", comment: ""), style: .default, handler: { (action) -> Void in
                 let activityController = UIActivityViewController(activityItems: [token], applicationActivities: nil)
-                self.presentViewController(activityController, animated: true, completion: nil)
-                let pasteboard = UIPasteboard.generalPasteboard()
+                self.present(activityController, animated: true, completion: nil)
+                let pasteboard = UIPasteboard.general()
                 pasteboard.string = token
-                alertController.dismissViewControllerAnimated(true, completion: nil)
+                alertController.dismiss(animated: true, completion: nil)
             }))
             alertController.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
-            self.presentViewController(alertController, animated: true, completion: nil)
+            self.present(alertController, animated: true, completion: nil)
         } else {
             let message = String(format: "Version: %@\n\nEnable push notifications in Settings app to receive push notifications.", arguments: [appVersion])
-            let alertController = UIAlertController(title: NSLocalizedString("Push Catalog", comment: ""), message: message, preferredStyle: .ActionSheet)
-            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Cancel, handler: { (action) -> Void in
-                alertController.dismissViewControllerAnimated(true, completion: nil)
+            let alertController = UIAlertController(title: NSLocalizedString("Push Catalog", comment: ""), message: message, preferredStyle: .actionSheet)
+            alertController.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: { (action) -> Void in
+                alertController.dismiss(animated: true, completion: nil)
             }))
+            // TODO: add another action to open the settings app
+            // TODO: in iOS 10 list the available settings
+            //          getNotificationSettings
             alertController.popoverPresentationController?.barButtonItem = sender
-            self.presentViewController(alertController, animated: true, completion: nil)
+            self.present(alertController, animated: true, completion: nil)
         }
     }
 }

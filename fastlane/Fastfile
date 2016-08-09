@@ -3,8 +3,8 @@ fastlane_version "1.57.0"
 default_platform :ios
 
 platform :ios do
-  desc "Builds certificates"
-  lane :cert do
+  desc "Generate certificates"
+  lane :gcert do
     cert(development: true, output_path: 'fastlane/certificates/')
     sigh(development: true, output_path: 'fastlane/certificates/', adhoc: true)
     pem(development: true, output_path: 'fastlane/certificates/')

@@ -26,8 +26,8 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "pushReceived:", name: kPushNotificationReceivedKey, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "pushToken:", name: kPushNotificationTokenKey, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ViewController.pushReceived(_:)), name: kPushNotificationReceivedKey, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ViewController.pushToken(_:)), name: kPushNotificationTokenKey, object: nil)
         printPayload()
     }
 

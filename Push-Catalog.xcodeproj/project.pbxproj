@@ -140,7 +140,7 @@
 				TargetAttributes = {
 					9538FCF51C5BCAEA007C964E = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = 25PEJAMC78;
+						DevelopmentTeam = 9S76YAVG8A;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -313,9 +313,9 @@
 				INFOPLIST_FILE = "Push-Catalog/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "it.macteo.push-catalog";
+				PRODUCT_BUNDLE_IDENTIFIER = it.macteo.notifcationcatalog;
 				PRODUCT_NAME = Catalog;
-				PROVISIONING_PROFILE = "888480ca-486b-4757-adeb-46d7e3390ac7";
+				PROVISIONING_PROFILE = "62ebe57b-455d-4e79-a052-f454ce713607";
 			};
 			name = Debug;
 		};
@@ -327,7 +327,7 @@
 				INFOPLIST_FILE = "Push-Catalog/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "it.macteo.push-catalog";
+				PRODUCT_BUNDLE_IDENTIFIER = it.macteo.notifcationcatalog;
 				PRODUCT_NAME = Catalog;
 				PROVISIONING_PROFILE = "";
 			};

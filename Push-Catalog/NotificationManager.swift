@@ -9,14 +9,14 @@
 import Foundation
 
 class NotificationsManager {
-    static let sharedInstance = NotificationsManager()
+    static let shared = NotificationsManager()
     
-    let defaults = NSUserDefaults.standardUserDefaults()
+    let defaults = UserDefaults.standard
     var notifications = [Notification]()
     
     func setup() {
-        if let existingNotifications = defaults.objectForKey("notifications") as? [NSData] {
-            notifications = existingNotifications.map {NSKeyedUnarchiver.unarchiveObjectWithData($0) as! Notification}
+        if let existingNotifications = defaults.object(forKey: "notifications") as? [Data] {
+            notifications = existingNotifications.map {NSKeyedUnarchiver.unarchiveObject(with: $0) as! Notification}
             if notifications.count == 0 {
                 basicNotifications()
             }
@@ -26,32 +26,32 @@ class NotificationsManager {
     }
     
     func saveNotifications() {
-        notifications.sortInPlace({$0.date.timeIntervalSince1970 > $1.date.timeIntervalSince1970})
-        defaults.setObject(notifications.map { $0.data }, forKey: "notifications")
+        notifications.sort(by: {$0.date.timeIntervalSince1970 > $1.date.timeIntervalSince1970})
+        defaults.set(notifications.map { $0.data }, forKey: "notifications")
         defaults.synchronize()
     }
     
-    func receivedNewNotification(notification: Notification) {
-        notifications.insert(notification, atIndex: 0)
+    func receivedNewNotification(_ notification: Notification) {
+        notifications.insert(notification, at: 0)
         saveNotifications()
     }
 
     func basicNotifications() {
         // TODO: load notifications from disk and generate them
         
-        let fm = NSFileManager.defaultManager()
-        let path = NSBundle.mainBundle().resourcePath!
+        let fm = FileManager.default
+        let path = Bundle.main.resourcePath!
         
         do {
-            let items = try fm.contentsOfDirectoryAtPath(path)
+            let items = try fm.contentsOfDirectory(atPath: path)
             for item in items {
-                if item.containsString(".json") {
+                if item.contains(".json") {
                     do {
-                        let path = "\(NSBundle.mainBundle().resourcePath!)/\(item)"
-                        let jsonData = try NSData(contentsOfFile: path, options: NSDataReadingOptions.DataReadingMappedIfSafe)
+                        let path = "\(Bundle.main.resourcePath!)/\(item)"
+                        let jsonData = try Data(contentsOf: URL(fileURLWithPath: path), options: NSData.ReadingOptions.mappedIfSafe)
                         do {
-                            guard let jsonResult: [NSObject : AnyObject] = try NSJSONSerialization.JSONObjectWithData(jsonData, options: NSJSONReadingOptions.AllowFragments) as? [NSObject : AnyObject] else { return }
-                            let notification = Notification(payload: jsonResult, date: NSDate())
+                            guard let jsonResult = try JSONSerialization.jsonObject(with: jsonData, options: JSONSerialization.ReadingOptions.allowFragments) as? [String : AnyObject] else { return }
+                            let notification = Notification(payload: jsonResult, date: Date())
                             notifications.append(notification)
                         } catch {}
                     } catch {}

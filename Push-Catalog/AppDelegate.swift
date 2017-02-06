@@ -15,7 +15,7 @@ let kPushNotificationTokenKey       = "pushNotificationToken"
 let kPushNotificationReceivedKey    = "pushNotificationReceived"
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     let notificationTypes : UIUserNotificationType = [.badge, .sound, .alert]
     var window: UIWindow?
@@ -33,6 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let settings = UIUserNotificationSettings(types: notificationTypes, categories: baseCategories)
         if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.current().delegate = self
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound], completionHandler: { (completed, error) in
                 if completed {
                     print("Completed authorization")
@@ -261,5 +262,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let viewCategory = UNNotificationCategory(identifier: "view-category", actions: [], intentIdentifiers: [], options: [])
         return [viewCategory]
+    }
+    
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        print("Will present notification")
+        completionHandler(UNNotificationPresentationOptions.alert)
     }
 }

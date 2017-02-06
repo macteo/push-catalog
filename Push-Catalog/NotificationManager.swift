@@ -11,7 +11,7 @@ import Foundation
 class NotificationsManager {
     static let shared = NotificationsManager()
     
-    let defaults = UserDefaults.standard()
+    let defaults = UserDefaults.standard
     var notifications = [Notification]()
     
     func setup() {
@@ -26,7 +26,7 @@ class NotificationsManager {
     }
     
     func saveNotifications() {
-        notifications.sort(isOrderedBefore: {$0.date.timeIntervalSince1970 > $1.date.timeIntervalSince1970})
+        notifications.sort(by: {$0.date.timeIntervalSince1970 > $1.date.timeIntervalSince1970})
         defaults.set(notifications.map { $0.data }, forKey: "notifications")
         defaults.synchronize()
     }
@@ -39,16 +39,16 @@ class NotificationsManager {
     func basicNotifications() {
         // TODO: load notifications from disk and generate them
         
-        let fm = FileManager.default()
-        let path = Bundle.main().resourcePath!
+        let fm = FileManager.default
+        let path = Bundle.main.resourcePath!
         
         do {
             let items = try fm.contentsOfDirectory(atPath: path)
             for item in items {
                 if item.contains(".json") {
                     do {
-                        let path = "\(Bundle.main().resourcePath!)/\(item)"
-                        let jsonData = try Data(contentsOf: URL(fileURLWithPath: path), options: NSData.ReadingOptions.dataReadingMappedIfSafe)
+                        let path = "\(Bundle.main.resourcePath!)/\(item)"
+                        let jsonData = try Data(contentsOf: URL(fileURLWithPath: path), options: NSData.ReadingOptions.mappedIfSafe)
                         do {
                             guard let jsonResult = try JSONSerialization.jsonObject(with: jsonData, options: JSONSerialization.ReadingOptions.allowFragments) as? [String : AnyObject] else { return }
                             let notification = Notification(payload: jsonResult, date: Date())

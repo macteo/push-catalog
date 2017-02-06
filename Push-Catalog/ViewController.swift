@@ -15,19 +15,19 @@ class ViewController: UIViewController {
 
     @IBAction func settingsButtonPressed(_ sender: AnyObject) {
         if let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) {
-            UIApplication.shared().openURL(settingsUrl)
+            UIApplication.shared.openURL(settingsUrl)
         } else {
             print("Failed to generate Settings app url.")
         }
     }
 
-    var payload : [NSObject : AnyObject]?
+    var payload : [AnyHashable: Any]?
     var token : String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default().addObserver(self, selector: #selector(ViewController.pushReceived(_:)), name: kPushNotificationReceivedKey, object: nil)
-        NotificationCenter.default().addObserver(self, selector: #selector(ViewController.pushToken(_:)), name: kPushNotificationTokenKey, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.pushReceived(_:)), name: NSNotification.Name(rawValue: kPushNotificationReceivedKey), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.pushToken(_:)), name: NSNotification.Name(rawValue: kPushNotificationTokenKey), object: nil)
         printPayload()
     }
 
@@ -62,12 +62,12 @@ class ViewController: UIViewController {
     }
 
     deinit {
-        NotificationCenter.default().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
 
     @IBAction func infoButtonPressed(_ sender: UIBarButtonItem) {
-        let shortVersion = Bundle.main().objectForInfoDictionaryKey("CFBundleShortVersionString") as! String
-        let version = Bundle.main().objectForInfoDictionaryKey("CFBundleVersion") as! String
+        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String
 
         let appVersion = "\(shortVersion) (\(version))"
         if let token = token {
@@ -78,7 +78,7 @@ class ViewController: UIViewController {
             alertController.addAction(UIAlertAction(title: NSLocalizedString("Share APN Token", comment: ""), style: .default, handler: { (action) -> Void in
                 let activityController = UIActivityViewController(activityItems: [token], applicationActivities: nil)
                 self.present(activityController, animated: true, completion: nil)
-                let pasteboard = UIPasteboard.general()
+                let pasteboard = UIPasteboard.general
                 pasteboard.string = token
                 alertController.dismiss(animated: true, completion: nil)
             }))

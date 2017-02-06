@@ -20,46 +20,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let notificationTypes : UIUserNotificationType = [.badge, .sound, .alert]
     var window: UIWindow?
     
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         application.statusBarStyle = .lightContent
         NotificationsManager.shared.setup()
         
-       //  testAttachment()
+        //  testAttachment()
         
-        if let userInfo = launchOptions?[UIApplicationLaunchOptionsRemoteNotificationKey] as? [String : AnyObject] {
+        if let userInfo = launchOptions?[UIApplicationLaunchOptionsKey.remoteNotification] as? [String : AnyObject] {
             let notification = Notification(payload: userInfo, date: Date())
             notification.reportNotificationReceived()
         }
         
         let settings = UIUserNotificationSettings(types: notificationTypes, categories: baseCategories)
         if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().requestAuthorization([.alert, .badge, .sound], completionHandler: { (completed, error) in
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound], completionHandler: { (completed, error) in
                 if completed {
                     print("Completed authorization")
                     UNUserNotificationCenter.current().setNotificationCategories(self.baseUserCategories)
                     
-//                    let settings = UIUserNotificationSettings(forTypes: self.notificationTypes, categories: self.baseCategories)
-//                    UIApplication.sharedApplication().registerUserNotificationSettings(settings)
-                    UIApplication.shared().registerForRemoteNotifications()
+                    //                    let settings = UIUserNotificationSettings(forTypes: self.notificationTypes, categories: self.baseCategories)
+                    //                    UIApplication.sharedApplication().registerUserNotificationSettings(settings)
+                    UIApplication.shared.registerForRemoteNotifications()
                 } else {
                     print("Used declined push notification authorization")
                 }
             })
         } else { // iOS 9 and 8
-            UIApplication.shared().registerUserNotificationSettings(settings)
+            UIApplication.shared.registerUserNotificationSettings(settings)
         } // TODO: also support iOS 7
         
         return true
     }
     
     func testAttachment() {
-        let fromPath = Bundle.main().pathForResource("icon-test", ofType: "png")!
+        let fromPath = Bundle.main.path(forResource: "icon-test", ofType: "png")!
         let fromURL = URL(fileURLWithPath: fromPath)
-        let documentsDirectoryURL = FileManager.default().urlsForDirectory(.documentDirectory, inDomains: .userDomainMask).first!
-        let toURL = try! documentsDirectoryURL.appendingPathComponent("icon-test.png")
-        if !FileManager.default().fileExists(atPath: toURL.path!) {
+        let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let toURL = documentsDirectoryURL.appendingPathComponent("icon-test.png")
+        if !FileManager.default.fileExists(atPath: toURL.path) {
             do {
-                try FileManager.default().copyItem(at:fromURL, to: toURL)
+                try FileManager.default.copyItem(at:fromURL, to: toURL)
             } catch let error {
                 print("Copy attachment error \(error)")
             }
@@ -75,15 +75,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
     }
     
-    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [NSObject : AnyObject], completionHandler: () -> Void) {
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any], completionHandler: @escaping () -> Void) {
         handleAction(identifier, userInfo: userInfo, completionHandler: completionHandler)
     }
     
-    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, for notification: UILocalNotification, completionHandler: () -> Void) {
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, for notification: UILocalNotification, completionHandler: @escaping () -> Void) {
         handleAction(identifier, userInfo: notification.userInfo, completionHandler: completionHandler)
     }
     
-    func handleAction(_ identifier: String?, userInfo: [NSObject: AnyObject]?, completionHandler: () -> Void) {
+    func handleAction(_ identifier: String?, userInfo: [AnyHashable : Any]?, completionHandler: @escaping () -> Void) {
         guard let identifier = identifier, let userInfo = userInfo else {
             print("Missing action identifier or action userInfo dictionary")
             completionHandler()
@@ -96,17 +96,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
         for action in actions {
-            guard let title = action[kActionTitleKey] as? String where title == identifier else { continue }
+            guard let title = action[kActionTitleKey] as? String, title == identifier else { continue }
             guard let urlString = action[kUrlKey] as? String, let url = URL(string: urlString) else { continue }
                 
-            let sessionConfiguration = URLSessionConfiguration.default()
+            let sessionConfiguration = URLSessionConfiguration.default
             let session = URLSession(configuration: sessionConfiguration)
             
             var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
             request.httpMethod = "GET"
             
             let task = session.dataTask(with: request, completionHandler: { (data, response, error) in
-                print(response)
+                print("\(response)")
                 completionHandler()
             })
             
@@ -120,7 +120,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var categories = baseCategories
         categories.insert(category)
         let settings = UIUserNotificationSettings(types: notificationTypes, categories: categories)
-        UIApplication.shared().registerUserNotificationSettings(settings)
+        UIApplication.shared.registerUserNotificationSettings(settings)
     }
     
     func application(_ application: UIApplication, didRegister notificationSettings: UIUserNotificationSettings) {
@@ -128,7 +128,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func checkIfPushNotificationAreAuthorized() {
-        let notificationTypes = UIApplication.shared().currentUserNotificationSettings()
+        let notificationTypes = UIApplication.shared.currentUserNotificationSettings
         guard let types = notificationTypes?.types else {
             print("Cannot fetch authorized push notification types")
             return
@@ -138,7 +138,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let alertController = UIAlertController(title: "Please authorize this app to receive Push notifications in Settings", message: nil, preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: "Settings", style: .default, handler: { (action) -> Void in
                 if let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) {
-                    UIApplication.shared().openURL(settingsUrl)
+                    UIApplication.shared.openURL(settingsUrl)
                 } else {
                     print("Failed to generate Settings app url.")
                 }
@@ -152,7 +152,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /**
      The application failed to receive a push notification token.
      */
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Did fail to register for remote notifications with error: \(error.localizedDescription)")
     }
     
@@ -165,7 +166,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let internalNotification = Foundation.Notification(name: NSNotification.Name(rawValue: kPushNotificationTokenKey), object: nil)
         
-        NotificationCenter.default().post(internalNotification)
+        NotificationCenter.default.post(internalNotification)
         
         // We still want check if the use authorized the app to receive push notifications
         checkIfPushNotificationAreAuthorized()
@@ -174,15 +175,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /**
      Received a silent push notification with key *content-available*.
      */
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         if let user = userInfo as? [String: AnyObject] {
             let notification = Notification(payload: user, date: Date())
             notification.performAction()
             
             // We are receiving the push notification while the application was
             // in foreground so we want to present an alert
-            if UIApplication.shared().applicationState == .active {
+            if UIApplication.shared.applicationState == .active {
                 notification.forgeAndPresentAlert()
             }
             
@@ -195,7 +195,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     // We just received a push notification while the application was in foreground
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
         if let user = userInfo as? [String: AnyObject] {
             let notification = Notification(payload: user, date: Date())
             notification.forgeAndPresentAlert()
@@ -210,9 +210,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
      `String`.
      */
     func convertDataToken(_ dataToken: Data) -> String {
-        let tokenString = dataToken.description.replacingOccurrences(of: "<", with: "", options: NSString.CompareOptions.literalSearch, range: nil).replacingOccurrences(of: ">", with: "", options: NSString.CompareOptions.literalSearch, range: nil).replacingOccurrences(of: " ", with: "", options: NSString.CompareOptions.literalSearch, range: nil)
-        
-        return tokenString
+        let token = dataToken.map { String(format: "%02.2hhx", $0) }.joined()
+        return token
     }
     
     /**
@@ -260,7 +259,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        openOrNotCategory.identifier = "yesOrNo"
 //        openOrNotCategory.setActions([acceptAction, refuseAction], forContext: UIUserNotificationActionContext.Default)
         
-        let viewCategory = UNNotificationCategory(identifier: "view-category", actions: [], minimalActions: [], intentIdentifiers: [], options: UNNotificationCategoryOptions())
+        let viewCategory = UNNotificationCategory(identifier: "view-category", actions: [], intentIdentifiers: [], options: [])
         return [viewCategory]
     }
 }

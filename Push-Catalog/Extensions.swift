@@ -77,13 +77,13 @@ extension UIAlertAction {
         let action = UIAlertAction(title: title, style: style, handler: { (action) -> Void in
             if let urlString = dictionary[kUrlKey] as? String,
                 let url = URL(string: urlString) {
-                    let sessionConfiguration = URLSessionConfiguration.default()
+                    let sessionConfiguration = URLSessionConfiguration.default
                     let session = URLSession(configuration: sessionConfiguration)
                     var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
                     request.httpMethod = "GET"
                     
                     let task = session.dataTask(with: request, completionHandler: { (data, response, error) in
-                        print(response)
+                        print("\(response)")
                     })
                     task.resume()
                     return

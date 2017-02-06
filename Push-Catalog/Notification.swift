@@ -87,15 +87,15 @@ class Notification: NSObject, NSCoding {
         alertController.addAction(UIAlertAction(title: "Close", style: .cancel, handler: nil))
         alertController.title = title
         alertController.message = message
-        UIApplication.shared().keyWindow?.rootViewController?.present(alertController, animated: true, completion: nil)
+        UIApplication.shared.keyWindow?.rootViewController?.present(alertController, animated: true, completion: nil)
     }
     
     func titleAndMessageFromAps() -> (title: String, message: String) {
-        return titleAndMessage(payload[kApsKey]?[kAlertKey])
+        return titleAndMessage(payload[kApsKey]?[kAlertKey] as AnyObject?)
     }
     
     func titleAndMessageFromPayload() -> (title: String, message: String) {
-        return titleAndMessage(payload[kPayloadKey]?[kAlertKey])
+        return titleAndMessage(payload[kPayloadKey]?[kAlertKey] as AnyObject?)
     }
     
     /**
@@ -110,7 +110,7 @@ class Notification: NSObject, NSCoding {
             // Title is shown only on the Apple Watch
             var title = string
             // So we use the application name to replicate the behavior
-            if let appName = Bundle.main().objectForInfoDictionaryKey("CFBundleDisplayName") as? String {
+            if let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String {
                 title = appName
             } else {
                 title = "Catalog"
@@ -137,7 +137,7 @@ class Notification: NSObject, NSCoding {
      */
     func reportNotificationReceived() {
         let internalNotification = Foundation.Notification(name: NSNotification.Name(rawValue: kPushNotificationReceivedKey), object: nil, userInfo: self.payload)
-        NotificationCenter.default().post(internalNotification)
+        NotificationCenter.default.post(internalNotification)
         
         NotificationsManager.shared.receivedNewNotification(self)
     }
@@ -154,8 +154,8 @@ class Notification: NSObject, NSCoding {
             // Remove every pending local notification
             if let clear = payload[kClearKey] as? Bool {
                 if clear == true {
-                    UIApplication.shared().cancelAllLocalNotifications()
-                    UIApplication.shared().applicationIconBadgeNumber = 0
+                    UIApplication.shared.cancelAllLocalNotifications()
+                    UIApplication.shared.applicationIconBadgeNumber = 0
                 }
             }
             
@@ -176,7 +176,7 @@ class Notification: NSObject, NSCoding {
                     category.setActions(actions, for: UIUserNotificationActionContext.default)
                 }
                 
-                if let appDelegate = UIApplication.shared().delegate as? AppDelegate {
+                if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
                     appDelegate.registerCategory(category)
                 }
                 
@@ -203,15 +203,14 @@ class Notification: NSObject, NSCoding {
                     localNotification.applicationIconBadgeNumber = badgeNumber
                 }
                 
-                let fireDate = Calendar.current().date(
+                let fireDate = Calendar.current.date(
                     byAdding: .second,
                     value: delay,
-                    to: Date(),
-                    options: Calendar.Options(rawValue: 0))
-
+                    to: Date())
+                
                 localNotification.fireDate = fireDate
                 
-                UIApplication.shared().scheduleLocalNotification(localNotification)
+                UIApplication.shared.scheduleLocalNotification(localNotification)
             }
         }
     }
